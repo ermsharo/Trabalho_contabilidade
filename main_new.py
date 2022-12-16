@@ -4,9 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-wallet_list = ["AMZN", "GOOG", "MSFT", "NFLX"]
-
-
 def list_to_array(list):
     arr = np.array(list)
     return arr
@@ -15,7 +12,9 @@ def list_to_array(list):
 def generate_df_closed(wallet_list, start_date, end_date):
     df = pd.DataFrame()
     for wall in wallet_list:
-        df[wall] = data.DataReader(wall, data_source="yahoo", start=start_date, end=end_date)["Close"]
+        df[wall] = data.DataReader(
+            wall, data_source="yahoo", start=start_date, end=end_date
+        )["Close"]
     df.head()
     df.pct_change().head()
     return df
@@ -144,38 +143,46 @@ def plot_efficient_frontier(wallets, method="sharpe_ratio"):
     plt.show()
 
 
+# Execução a partir daqui
+
 ## Atribuindo nossos pesos
 w = [0.3, 0.3, 0.2, 0.2]
 
-## Gerando o dataframe que usaremos
-generated_closed_df = generate_df_closed(wallet_list, "1-1-2010","1-1-2022")
+wallet_list = ["AMZN", "GOOG", "MSFT", "NFLX"]
 
+## Gerando o dataframe que usaremos
+generated_closed_df = generate_df_closed(wallet_list, "1-1-2010", "1-1-2022")
 # Retorno dos nossos ativos
 df_active_returns = ative_retuns(generated_closed_df)
+# print("Retorno dos nossos ativos", df_active_returns)
 
-# Retorno do nosso portfolio
+# Retorno do nosso portfloio
 df_portf_returns = portfolio_retuns(generated_closed_df, w)
+#print("Retorno do nosso portfolio", df_active_returns)
 
 ## Analisando o risco
 df_risk_returns = get_risk(generated_closed_df, w)
+print("Analisando o risco", df_risk_returns)
 
 ## Gerando as nossas carteiras
 generated_wallets = generate_wallets(generated_closed_df)
 
+
 ## Filtrando o melhor portfolio
 best_port = best_portfolio(generated_wallets, method="sharpe_ratio")
+print("Melhor portfolio", best_port)
 
 ## Executando nosso grafico
 plot_efficient_frontier(generated_wallets, method="sharpe_ratio")
 plot_efficient_frontier(generated_wallets, method="volatility")
 
 ## Executando um segundo caso com outras carteiras
-
-
 wallet_list_2 = ["GE", "GOOG", "IBM", "NFLX"]
 
-
-generated_closed_df_2= generate_df_closed(wallet_list_2, "1-1-2010","1-1-2022")
+generated_closed_df_2 = generate_df_closed(wallet_list_2, "1-1-2010", "1-1-2022")
 generated_wallets_2 = generate_wallets(generated_closed_df_2)
+best_port2 = best_portfolio(generated_wallets_2, method="sharpe_ratio")
+print("Melhor portfolio 2", best_port2)
+
 plot_efficient_frontier(generated_wallets_2, method="sharpe_ratio")
 plot_efficient_frontier(generated_wallets_2, method="volatility")
