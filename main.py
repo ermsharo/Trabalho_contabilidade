@@ -1,6 +1,7 @@
 import pandas as pd 
 from pandas_datareader import data
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Montando o nossa carteira com preços de fechamento da Amazon, Google, Microsoft e Netflix
 df = pd.DataFrame()
@@ -11,7 +12,6 @@ df['NFLX'] = data.DataReader('NFLX', data_source='yahoo', start='1-1-2010')['Clo
 
 df.head()
 
-print("nossa df aqui",df)
 
 df.pct_change().head()
 
@@ -30,11 +30,19 @@ mean_returns = r.mean() * 252
 # matriz de covariância 
 covariance = np.cov(r[1:].T)
 
+# Lista para array
+def list_to_array(list):
+    arr = np.array(list)
+    return arr
+
+
 # Risco do portfólio anualizado
-vol = np.sqrt(np.dot(w.T, np.dot(covariance, w))) * np.sqrt(252)
+vol = np.sqrt(np.dot(list_to_array(w).T, np.dot(covariance, w))) * np.sqrt(252)
 
 
 
+
+# Gerar nossas carteiras
 def generate_wallets(df_close, num_portfolios = 10000, risk_free = 0):
     # vetores de dados
     portfolio_weights = []
@@ -58,7 +66,7 @@ def generate_wallets(df_close, num_portfolios = 10000, risk_free = 0):
         R = np.dot(mean_returns, w)
 
         # risco
-        vol = np.sqrt(np.dot(w.T, np.dot(covariance, w))) * np.sqrt(252)
+        vol = np.sqrt(np.dot(list_to_array(w).T, np.dot(covariance, w))) * np.sqrt(252)
 
         # sharpe ratio
         sharpe = (R - risk_free)/vol
@@ -76,7 +84,7 @@ def generate_wallets(df_close, num_portfolios = 10000, risk_free = 0):
     return wallets
 
 
-
+# Melhor portfolio
 def best_portfolio(wallets):
     sharpe = wallets['sharpe']
     weights = wallets['weights']
@@ -84,3 +92,75 @@ def best_portfolio(wallets):
     indice = np.array(sharpe).argmax()
         
     return weights[indice]
+
+
+# Fronteira eficiente
+def plot_efficient_frontier(wallets):
+    vol = wallets['vol']
+    returns = wallets['returns']
+    sharpe = wallets['sharpe']
+
+    indice = np.array(sharpe).argmax()
+    y_axis = returns[indice]
+    X_axis = vol[indice]
+
+    plt.scatter(vol, returns, c = sharpe, cmap = 'viridis')
+    plt.scatter(X_axis, y_axis, c = 'red', s = 50)
+    plt.title("Efficient Frontier")
+    plt.xlabel("Volatility")
+    plt.ylabel("Expected return")
+    plt.show()
+
+
+
+def best_portfolio(wallets, method = 'sharpe_ratio'):
+    vol = wallets['vol']
+    sharpe = wallets['sharpe']
+    weights = wallets['weights']
+    returns = wallets['returns']
+    
+    if method == 'sharpe_ratio':
+
+        indice = np.array(sharpe).argmax()
+
+    elif method == 'volatility':
+
+        indice = np.array(vol).argmin()
+
+    elif method == 'return':
+
+        indice = np.array(returns).argmax()
+
+    return weights[indice]
+
+
+
+def plot_efficient_frontier(wallets, method = 'sharpe_ratio'):
+    vol = wallets['vol']
+    returns = wallets['returns']
+    sharpe = wallets['sharpe']
+
+    if method == 'sharpe_ratio':
+
+        indice = np.array(sharpe).argmax()
+        y_axis = returns[indice]
+        X_axis = vol[indice]
+
+    elif method == 'volatility':
+
+        indice = np.array(vol).argmin()
+        y_axis = returns[indice]
+        X_axis = vol[indice]
+
+    elif method == 'return': 
+
+        indice = np.array(returns).argmax()
+        y_axis = returns[indice]
+        X_axis = vol[indice]
+
+    plt.scatter(vol, returns, c = sharpe, cmap = 'viridis')
+    plt.scatter(X_axis, y_axis, c = 'red', s = 50)
+    plt.title("Efficient Frontier")
+    plt.xlabel("Volatility")
+    plt.ylabel("Expected return")
+    plt.show()
