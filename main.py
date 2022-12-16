@@ -53,7 +53,7 @@ def generate_df_closed():
     return df
 
 
-# Gerar nossas carteiras
+
 def generate_wallets(df_close, num_portfolios=10000, risk_free=0):
     # vetores de dados
     portfolio_weights = []
